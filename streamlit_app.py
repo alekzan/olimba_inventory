@@ -65,7 +65,7 @@ def update_google_sheet(df):
 
     # Autenticar con Google Sheets API
     client = gspread.authorize(creds)
-    spreadsheet = client.open_by_key(SHEET_ID)
+    spreadsheet = client.open_by_key(os.getenv("SHEET_ID"))
     worksheet = spreadsheet.sheet1
     sheet_data = worksheet.get_all_values()
     headers = sheet_data[0]
@@ -80,7 +80,15 @@ def update_google_sheet(df):
     updates = []
     missing_skus = []
 
-    for _, row in df.iterrows():
+    # Obtener la fecha y hora actual en la zona horaria de México
+    now = datetime.now(mexico_tz)
+    timestamp = now.strftime("%d-%m-%Y_%H-%M")  # Formato DD-MM-YYYY_HH-MM
+    missing_skus_filename = f"missing_skus_{timestamp}.txt"
+
+    # 🔹 **Agrupar df por "SKU de la oferta" y sumar la "Cantidad"**
+    df_grouped = df.groupby("SKU de la oferta", as_index=False)["Cantidad"].sum()
+
+    for _, row in df_grouped.iterrows():
         sku = row["SKU de la oferta"]
         cantidad = row["Cantidad"]
         match_index = df_sheet[df_sheet["SKU_Liverpool"] == sku].index
@@ -101,16 +109,19 @@ def update_google_sheet(df):
 
     # Guardar SKUs faltantes en un archivo si hay alguno
     if missing_skus:
-        with open("missing_skus.txt", "w") as f:
+        with open(missing_skus_filename, "w") as f:
+            f.write(f"Reporte de SKUs no encontrados - Fecha: {timestamp}\n")
+            f.write("=" * 50 + "\n")
             f.writelines(missing_skus)
+
         st.warning(
             "Algunos SKUs no fueron encontrados en Google Sheets. Puedes descargar el reporte a continuación."
         )
-        with open("missing_skus.txt", "rb") as f:
+        with open(missing_skus_filename, "rb") as f:
             st.download_button(
                 label="Descargar SKUs no encontrados",
                 data=f,
-                file_name="missing_skus.txt",
+                file_name=missing_skus_filename,
                 mime="text/plain",
             )
 
