@@ -1,26 +1,27 @@
 import streamlit as st
 import pandas as pd
 import gspread
-import os
 import pytz
-import json
 from datetime import datetime
 from google.oauth2.service_account import Credentials
-from dotenv import load_dotenv
 
-# Cargar variables de entorno
-load_dotenv()
-# Cargar credenciales de Google desde el archivo .env
-service_account_info = json.loads(os.getenv("GOOGLE_SERVICE_ACCOUNT"))
+# For local testing you might use dotenv; on Streamlit Cloud, st.secrets is used automatically.
+# Uncomment these lines for local development if needed:
+# from dotenv import load_dotenv
+# load_dotenv()
+
+# Access the secrets from st.secrets
+SHEET_ID = st.secrets["SHEET_ID"]
+GOOGLE_SERVICE_ACCOUNT = st.secrets["GOOGLE_SERVICE_ACCOUNT"]
+
+# Create credentials from the secrets
 creds = Credentials.from_service_account_info(
-    service_account_info,
+    GOOGLE_SERVICE_ACCOUNT,
     scopes=[
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive.file",
     ],
 )
-
-SHEET_ID = os.getenv("SHEET_ID")
 
 # Configurar la zona horaria de México (GMT-6)
 mexico_tz = pytz.timezone("America/Mexico_City")
@@ -53,8 +54,8 @@ def filter_and_sum_orders(df):
 
 def update_google_sheet(df):
     """Actualiza la hoja de Google con las cantidades procesadas y registra SKUs no encontrados."""
-    # Cargar credenciales desde las variables de entorno (.env)
-    service_account_info = json.loads(os.getenv("GOOGLE_SERVICE_ACCOUNT"))
+    # Use the secrets from st.secrets instead of os.getenv()
+    service_account_info = st.secrets["GOOGLE_SERVICE_ACCOUNT"]
     creds = Credentials.from_service_account_info(
         service_account_info,
         scopes=[
@@ -65,7 +66,7 @@ def update_google_sheet(df):
 
     # Autenticar con Google Sheets API
     client = gspread.authorize(creds)
-    spreadsheet = client.open_by_key(os.getenv("SHEET_ID"))
+    spreadsheet = client.open_by_key(st.secrets["SHEET_ID"])
     worksheet = spreadsheet.sheet1
     sheet_data = worksheet.get_all_values()
     headers = sheet_data[0]
@@ -85,7 +86,7 @@ def update_google_sheet(df):
     timestamp = now.strftime("%d-%m-%Y_%H-%M")  # Formato DD-MM-YYYY_HH-MM
     missing_skus_filename = f"missing_skus_{timestamp}.txt"
 
-    # 🔹 **Agrupar df por "SKU de la oferta" y sumar la "Cantidad"**
+    # Agrupar df por "SKU de la oferta" y sumar la "Cantidad"
     df_grouped = df.groupby("SKU de la oferta", as_index=False)["Cantidad"].sum()
 
     for _, row in df_grouped.iterrows():
