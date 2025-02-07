@@ -1,0 +1,6 @@
+streamlit
+pandas
+gspread
+pytz
+google-auth
+python-dotenv
