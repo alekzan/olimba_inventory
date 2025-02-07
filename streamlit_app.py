@@ -3,13 +3,23 @@ import pandas as pd
 import gspread
 import os
 import pytz
+import json
 from datetime import datetime
 from google.oauth2.service_account import Credentials
 from dotenv import load_dotenv
 
 # Cargar variables de entorno
 load_dotenv()
-SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT_FILE")
+# Cargar credenciales de Google desde el archivo .env
+service_account_info = json.loads(os.getenv("GOOGLE_SERVICE_ACCOUNT"))
+creds = Credentials.from_service_account_info(
+    service_account_info,
+    scopes=[
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive.file",
+    ],
+)
+
 SHEET_ID = os.getenv("SHEET_ID")
 
 # Configurar la zona horaria de México (GMT-6)
@@ -43,13 +53,17 @@ def filter_and_sum_orders(df):
 
 def update_google_sheet(df):
     """Actualiza la hoja de Google con las cantidades procesadas y registra SKUs no encontrados."""
-    creds = Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE,
+    # Cargar credenciales desde las variables de entorno (.env)
+    service_account_info = json.loads(os.getenv("GOOGLE_SERVICE_ACCOUNT"))
+    creds = Credentials.from_service_account_info(
+        service_account_info,
         scopes=[
             "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive",
+            "https://www.googleapis.com/auth/drive.file",
         ],
     )
+
+    # Autenticar con Google Sheets API
     client = gspread.authorize(creds)
     spreadsheet = client.open_by_key(SHEET_ID)
     worksheet = spreadsheet.sheet1
