@@ -6,32 +6,34 @@ from datetime import datetime
 from google.oauth2.service_account import Credentials
 import io
 import psycopg2  # Using psycopg2 for PostgreSQL
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
 
 # ---------------------------------------------------------------------------
 # Configuration & Authentication
 # ---------------------------------------------------------------------------
-SHEET_ID = os.getenv("SHEET_ID")
-SERVICE_ACCOUNT_FILE = "/Users/alex/Projects/Olimba/automatization_olimba/Gus files/inventory_app/json_google/spreadsheet-demo-for-hr-9cf643c81c21.json"
-SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive",
-]
-creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+# For local only
+#import os
+#from dotenv import load_dotenv
+
+#load_dotenv()
+#SHEET_ID = os.getenv("SHEET_ID")
+#SERVICE_ACCOUNT_FILE = "/Users/alex/Projects/Olimba/automatization_olimba/Gus files/inventory_app/json_google/spreadsheet-demo-for-hr-9cf643c81c21.json"
+#SCOPES = [
+#    "https://www.googleapis.com/auth/spreadsheets",
+#    "https://www.googleapis.com/auth/drive",
+#]
+#creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 
 # For Streamlit Cloud deployment, you can use:
-# SHEET_ID = st.secrets["SHEET_ID"]
-# GOOGLE_SERVICE_ACCOUNT = st.secrets["GOOGLE_SERVICE_ACCOUNT"]
-# creds = Credentials.from_service_account_info(
-#    GOOGLE_SERVICE_ACCOUNT,
-#    scopes=[
-#        "https://www.googleapis.com/auth/spreadsheets",
-#        "https://www.googleapis.com/auth/drive.file",
-#    ],
-# )
+SHEET_ID = st.secrets["SHEET_ID"]
+GOOGLE_SERVICE_ACCOUNT = st.secrets["GOOGLE_SERVICE_ACCOUNT"]
+creds = Credentials.from_service_account_info(
+   GOOGLE_SERVICE_ACCOUNT,
+   scopes=[
+       "https://www.googleapis.com/auth/spreadsheets",
+       "https://www.googleapis.com/auth/drive.file",
+   ],
+)
 
 mexico_tz = pytz.timezone("America/Mexico_City")
 
