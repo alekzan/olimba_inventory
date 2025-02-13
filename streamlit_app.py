@@ -41,10 +41,7 @@ mexico_tz = pytz.timezone("America/Mexico_City")
 # PostgreSQL Helper Functions (using Neon)
 # ---------------------------------------------------------------------------
 def get_connection():
-    try:
-        return psycopg2.connect(os.getenv("DATABASE_URL"))
-    except Exception:
-        return psycopg2.connect(st.secrets["DATABASE_URL"])
+    return psycopg2.connect(st.secrets["DATABASE_URL"])
 
 def init_db():
     conn = get_connection()
