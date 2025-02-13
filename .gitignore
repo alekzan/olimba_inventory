@@ -6,3 +6,6 @@ __pycache__/
 *.xlsx
 *.json
 *.txt
+*.db
+*.ipynb
+*.ipynb_checkpoints/
