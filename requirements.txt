@@ -8,3 +8,4 @@ google-auth-httplib2
 python-dotenv
 openpyxl
 psycopg2-binary
+xlsxwriter
