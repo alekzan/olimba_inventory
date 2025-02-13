@@ -7,4 +7,4 @@ google-auth-oauthlib
 google-auth-httplib2
 python-dotenv
 openpyxl
-psycopg2
+psycopg2-binary
